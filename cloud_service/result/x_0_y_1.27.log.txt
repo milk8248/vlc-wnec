@@ -1,0 +1,9 @@
+Starting: Aoa full on image /Users/lambert/Documents/vlc-localization-master/cloud_service/img/x_0_y_1.27.jpg taken with <module 'phones.cameras.lumia_1020_back' from '../processing/phones/cameras/lumia_1020_back.pyc'> in <module 'rooms.test_rig' from '../processing/rooms/test_rig.pyc'>
+Complete: Aoa full on image /Users/lambert/Documents/vlc-localization-master/cloud_service/img/x_0_y_1.27.jpg taken with <module 'phones.cameras.lumia_1020_back' from '../processing/phones/cameras/lumia_1020_back.pyc'> in <module 'rooms.test_rig' from '../processing/rooms/test_rig.pyc'> (2.498 secs)
+rx_location = [-1.61057275  4.38404265  1.23815286]
+rx_rotation =
+[[-0.27699199  0.26487769  0.4389525 ]
+ [-0.2764634   0.26508921  0.41447087]
+ [-0.27670428  0.26493588  0.42731329]]
+location_error = 0.348056129098
+m_avg_loc = [-1.6105727520180271, 4.3840426526835845, 1.2381528597799836]

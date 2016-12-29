@@ -1,0 +1,13 @@
+x-luxapose-device-uuid: tCdlp0tC188kB1ppE8MCaMmmwd8=
+content-length: 2952507
+accept-encoding: gzip, deflate
+x-luxapose-ble-loc-hints: atrium
+x-luxapose-camera: back
+connection: keep-alive
+accept: */*
+user-agent: python-requests/2.12.3
+host: localhost:4908
+x-luxapose-phone-type: lumia_1020
+content-type: image/jpeg
+x-luxapose-user: lambert
+X-luxapose-source-ip: 127.0.0.1
