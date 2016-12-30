@@ -131,6 +131,8 @@ static void *DeviceWhiteBalanceGainsContext = &DeviceWhiteBalanceGainsContext;
 NSString * const PFET_URL = @"http://140.118.170.52:4908/img/";
 NSString * const TEST_URL = @"http://140.118.170.52:4908/img/";
 
+NSString * which_camera;
+
 NSTimer * picTimer;
 bool isStarted = false;
 
@@ -173,6 +175,7 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/10000; // Limit exposure duration t
         [server_box setText:data.server_name];
     }
     
+    which_camera=@"back";
 
     
     BEACON_UUID = @"E34C797C-9D72-4E20-C139-AE049FEB684E";
@@ -404,12 +407,15 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/10000; // Limit exposure duration t
 		{
 			case AVCaptureDevicePositionUnspecified:
 				preferredPosition = AVCaptureDevicePositionBack;
+                which_camera=@"back";
 				break;
 			case AVCaptureDevicePositionBack:
 				preferredPosition = AVCaptureDevicePositionFront;
+                which_camera=@"front";
 				break;
 			case AVCaptureDevicePositionFront:
 				preferredPosition = AVCaptureDevicePositionBack;
+                which_camera=@"back";
 				break;
 		}
 		
@@ -472,7 +478,8 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/10000; // Limit exposure duration t
                 UIImage *image = [[UIImage alloc] initWithData:imageData];
                 //TODO send image here
                 [self postImage:image];
-                [[[ALAssetsLibrary alloc] init] writeImageToSavedPhotosAlbum:[image CGImage] orientation:(ALAssetOrientation)[image imageOrientation] completionBlock:nil];
+                //Save Image
+                //[[[ALAssetsLibrary alloc] init] writeImageToSavedPhotosAlbum:[image CGImage] orientation:(ALAssetOrientation)[image imageOrientation] completionBlock:nil];
             }
         }];
     });
@@ -1242,31 +1249,34 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/10000; // Limit exposure duration t
 
 - (void) postImage:(UIImage *) image  {
     
-    //UIImage *image= [UIImage imageNamed:@"image.png"];
-    //UIImage *yourImage= [UIImage imageNamed:@"image.png"];
+    NSLog(@"Upload Images start. Send to: %@",[data server_name]);
+    NSDateFormatter *dateFormatter=[[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"yyyy-MM-dd-HH-mm-ss-SS"];
+    NSString *imageFileName = [NSString stringWithFormat:@"%@.jpg",[dateFormatter stringFromDate:[NSDate date]]];
+    NSLog(@"Send Image File name: %@",imageFileName);
+    NSString *url = [NSString stringWithFormat:@"%@%@",[data server_name],imageFileName];
     
     //if ([[ble_ssid text] isEqualToString:@"NA"])
     //NSLog([ble_ssid text]);
-          
-    NSLog(@"Sending to server:%@",[data server_name]);
+
     //NSLog([data server_name]);
     //UIImageJPEGRepresentation(<#UIImage *image#>, CGFloat compressionQuality)
     
 //    NSData *imageData = UIImagePNGRepresentation(image);
     NSData *imageData = UIImageJPEGRepresentation(image, 0.33f);
     NSString *postLength = [NSString stringWithFormat:@"%d", [imageData length]];
-    
-    //NSString *imageFileName = @"image-name.jpg";
+
     // post to server
     //[self uploadToServerUsingImage:imageData andFileName:imageFileName];
     
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
     [request setHTTPMethod:@"POST"];
-    [request setURL:[NSURL URLWithString:[data server_name]]];
-    //[request setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
+    [request setURL:[NSURL URLWithString:url]];
     [request setValue:@"image/jpeg" forHTTPHeaderField:@"Content-Type"];
     [request setValue:@"iphone5" forHTTPHeaderField:@"x-luxapose-phone-type"];
-    [request setValue:@"back" forHTTPHeaderField:@"x-luxapose-camera"];
+    [request setValue:which_camera forHTTPHeaderField:@"x-luxapose-camera"];
+    [request setValue:@"lambert" forHTTPHeaderField:@"x-luxapose-user"];
+    [request setValue:[[[UIDevice currentDevice] identifierForVendor] UUIDString] forHTTPHeaderField:@"x-luxapose-device-uuid"];
     [request setValue:postLength forHTTPHeaderField:@"Content-Length"];
     [request setHTTPBody:imageData];
     
@@ -1274,62 +1284,8 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/10000; // Limit exposure duration t
     if (connection) {
         // response data of the request
     }
+    
 }
-
-//// HTTP method to upload file to web server
-//- (void)uploadToServerUsingImage:(NSData *)imageData andFileName:(NSString *)filename {
-//    // set this to your server's address
-//    NSString *urlString = @"http://140.118.170.52:8080/img/";
-//    // set the content type, in this case it needs to be: "Content-Type: image/jpg"
-//    // Extract 'jpg' or 'png' from the last three characters of 'filename'
-//    if (([filename length] -3 ) > 0) {
-//        NSString *contentType = [NSString stringWithFormat:@"Content-Type: image/%@", [filename substringFromIndex:[filename length] - 3]];
-//    }
-//    
-//    // allocate and initialize the mutable URLRequest, set URL and method.
-//    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] init];
-//    [request setURL:[NSURL URLWithString:urlString]];
-//    [request setHTTPMethod:@"POST"];
-//    // define the boundary and newline values
-//    NSString *boundary = @"uwhQ9Ho7y873Ha";
-//    NSString *kNewLine = @"\r\n";
-//    
-//    // Set the URLRequest value property for the HTTP Header
-//    // Set Content-Type as a multi-part form with boundary identifier
-//    NSString *contentType = [NSString stringWithFormat:@"multipart/form-data; boundary=%@",boundary];
-//    [request setValue:contentType forHTTPHeaderField: @"Content-Type"];
-//    
-//    // prepare a mutable data object used to build message body
-//    NSMutableData *body = [NSMutableData data];
-//    
-//    // set the first boundary
-//    [body appendData:[[NSString stringWithFormat:@"--%@%@", boundary, kNewLine] dataUsingEncoding:NSUTF8StringEncoding]];
-//    
-//    // Set the form type and format
-//    [body appendData:[[NSString stringWithFormat:@"Content-Disposition: form-data; name=\"%@\"; filename=\"%@\"%@", @"uploaded_file", filename, kNewLine] dataUsingEncoding:NSUTF8StringEncoding]];
-//    [body appendData:[[NSString stringWithFormat:@"Content-Type: image/jpg"] dataUsingEncoding:NSUTF8StringEncoding]];
-//    
-//    // Now append the image itself.  For some servers, two carriage-return line-feeds are necessary before the image
-//    [body appendData:[[NSString stringWithFormat:@"%@%@", kNewLine, kNewLine] dataUsingEncoding:NSUTF8StringEncoding]];
-//    [body appendData:imageData];
-//    [body appendData:[kNewLine dataUsingEncoding:NSUTF8StringEncoding]];
-//    
-//    // Add the terminating boundary marker & append a newline
-//    [body appendData:[[NSString stringWithFormat:@"--%@--", boundary] dataUsingEncoding:NSUTF8StringEncoding]];
-//    [body appendData:[kNewLine dataUsingEncoding:NSUTF8StringEncoding]];
-//    
-//    // Setting the body of the post to the request.
-//    [request setHTTPBody:body];
-//    
-//    // TODO: Next three lines are only used for testing using synchronous conn.
-//    NSData *returnData = [NSURLConnection sendSynchronousRequest:request returningResponse:nil error:nil];
-//    NSString *returnString = [[NSString alloc] initWithData:returnData encoding:NSUTF8StringEncoding];
-//    NSLog(@"==> sendSyncReq returnString: %@", returnString);
-//    
-//    // You will probably want to replace above 3 lines with asynchronous connection
-//    //    NSURLConnection *connection = [[NSURLConnection alloc]initWithRequest:request delegate:self];
-//}
-
 
 
 /*
