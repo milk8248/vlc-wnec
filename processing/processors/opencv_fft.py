@@ -20,7 +20,7 @@ dbg_step = 0
 def dbg_fname(fname):
 	global dbg_step
 	dbg_step += 1
-	return '/tmp/luxp-opencv_fft-step{}-'.format(dbg_step) + fname + '.png'
+	return './tmp/luxp-opencv_fft-step{}-'.format(dbg_step) + fname + '.png'
 
 def dbg_save(fname, array):
 	fname = dbg_fname(fname)
@@ -113,8 +113,9 @@ def imag_proc(file_name, num_of_tx, camera):
 		cv2.drawContours(contour_image, contours, -1, 255, 3)
 		dbg_save('contours', contour_image)
 
-		#contours_kept_image = gray_image.copy()
-		contours_kept_image = cv2.imread(file_name, cv2.IMREAD_COLOR)
+		contours_kept_image = gray_image.copy()
+		contours_kept_image = cv2.cvtColor(contours_kept_image, cv2.COLOR_GRAY2RGB)
+		#contours_kept_image = cv2.imread(file_name, cv2.IMREAD_COLOR)
 
 		# Draw the center point; useful for eyeballing calibration
 		kept_center = (contours_kept_image.shape[1] / 2, contours_kept_image.shape[0] / 2)
@@ -329,14 +330,23 @@ def imag_proc(file_name, num_of_tx, camera):
 						2)
 				cv2.putText(
 						contours_kept_image,
-						"({} {}) {} Hz".format(
+						"({} {})".format(
 							centers[i][1],
 							centers[i][0],
-							int(peak_freq)),
+							),
 						(centers[i][1]+100, centers[i][0]),
 						cv2.FONT_HERSHEY_TRIPLEX,
-						2,
+						1,
 						YELLOW)
+				if(int(peak_freq)>=2000):
+					cv2.putText(
+							contours_kept_image,
+							"{} Hz".format(
+								int(peak_freq)),
+							(centers[i][1]+100, centers[i][0]+50),
+							cv2.FONT_HERSHEY_TRIPLEX,
+							1,
+							YELLOW)
 
 			estimated_frequencies.append(peak_freq)
 		except:
