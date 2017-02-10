@@ -16,8 +16,6 @@
 #import "AAPLPreviewView.h"
 #import "DataClass.h"
 
-#import <CoreLocation/CoreLocation.h>
-#import <CoreBluetooth/CoreBluetooth.h>
 
 //TODO: save each side settings and reload on switch
 //      set better static start
@@ -37,7 +35,7 @@ static void *ISOContext = &ISOContext;
 static void *ExposureTargetOffsetContext = &ExposureTargetOffsetContext;
 static void *DeviceWhiteBalanceGainsContext = &DeviceWhiteBalanceGainsContext;
 
-@interface AAPLCameraViewController () <AVCaptureFileOutputRecordingDelegate, CBCentralManagerDelegate>
+@interface AAPLCameraViewController () <AVCaptureFileOutputRecordingDelegate>
 
 @property (nonatomic, weak) IBOutlet AAPLPreviewView *previewView;
 @property (nonatomic, weak) IBOutlet UIButton *recordButton;
@@ -51,7 +49,6 @@ static void *DeviceWhiteBalanceGainsContext = &DeviceWhiteBalanceGainsContext;
 - (IBAction)singlepic_motion:(id)sender;
 
 @property (nonatomic, strong) NSArray *focusModes;
-@property (nonatomic, weak) IBOutlet UIView *manualHUDFocusView;
 @property (nonatomic, weak) IBOutlet UISegmentedControl *focusModeControl;
 @property (nonatomic, weak) IBOutlet UISlider *lensPositionSlider;
 @property (nonatomic, weak) IBOutlet UILabel *lensPositionNameLabel;
@@ -98,22 +95,8 @@ static void *DeviceWhiteBalanceGainsContext = &DeviceWhiteBalanceGainsContext;
 
 // Server Buttons
 - (IBAction)server_box_event:(id)sender;
-- (IBAction)pfet_btn:(id)sender;
-//- (IBAction)mem_btn:(id)sender;
-//- (IBAction)pat_btn:(id)sender;
-//- (IBAction)cap_btn:(id)sender;
-//- (IBAction)ninja_btn:(id)sender;
+- (IBAction)wnec_btn:(id)sender;
 - (IBAction)test_btn:(id)sender;
-
-// BLE stuff
-@property (strong, nonatomic) IBOutlet UILabel *ble_state;
-
-@property (strong, nonatomic) IBOutlet UILabel *ble_ssid;
-@property (strong, nonatomic) IBOutlet UILabel *ble_rssi;
-@property (strong, nonatomic) IBOutlet UILabel *ble_uuid;
-@property (strong, nonatomic) IBOutlet UILabel *ble_dist;
-@property (strong, nonatomic) CBCentralManager *centralManager;
-@property (strong, nonatomic) NSMutableArray *beaconList;
 
 // Server view stuff
 @property (strong, nonatomic) IBOutlet UITextField *server_box;
@@ -121,14 +104,7 @@ static void *DeviceWhiteBalanceGainsContext = &DeviceWhiteBalanceGainsContext;
 @end
 
 // Server view stuff
-//NSString * const PFET_URL = @"http://pfet-v2.eecs.umich.edu:4908/img/";
-//NSString * const CAP_URL = @"http://capacitor.eecs.umich.edu:4908/img/";
-//NSString * const MEM_URL = @"http://memristor-v1.eecs.umich.edu:4908/img/";
-//NSString * const NINJA_URL = @"http://ninja.eecs.umich.edu:4908/img/";
-//NSString * const PAT_URL = @"http://patbook.eecs.umich.edu:4908/img/";
-//NSString * const TEST_URL = @"http://requestb.in/1lbhs7p1";
-
-NSString * const PFET_URL = @"http://140.118.170.52:4908/img/";
+NSString * const WNEC_URL = @"http://140.118.170.52:4908/img/";
 NSString * const TEST_URL = @"http://140.118.170.52:4908/img/";
 
 NSString * which_camera;
@@ -138,10 +114,10 @@ bool isStarted = false;
 
 @implementation AAPLCameraViewController
 
-@synthesize centralManager, BEACON_UUID, ble_state, ble_ssid, ble_rssi, ble_uuid, ble_dist, cameraButton, stillButton;
+@synthesize stillButton;
 
 //Server view variables
-@synthesize server_box, tableView, beacons, beaconList;
+@synthesize server_box;
 DataClass *data;
 
 static UIColor* CONTROL_NORMAL_COLOR = nil;
@@ -178,10 +154,7 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/10000; // Limit exposure duration t
     which_camera=@"back";
 
     
-    BEACON_UUID = @"E34C797C-9D72-4E20-C139-AE049FEB684E";
-    centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil];
-    beaconList = [[NSMutableArray alloc] init];
-
+    
     /*
     UIRefreshControl *refreshControl = [[UIRefreshControl alloc] init];
     [refreshControl addTarget:self action:@selector(refresh:) forControlEvents:UIControlEventValueChanged];
@@ -256,7 +229,6 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/10000; // Limit exposure duration t
 	
 	self.manualHUDExposureView.hidden = YES;
 	self.manualHUDWhiteBalanceView.hidden = YES; //server
-    self.manualHUDFocusView.hidden = YES; //BLE
 }
 
 /*
@@ -265,81 +237,6 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/10000; // Limit exposure duration t
     [refreshControl endRefreshing];
 }
 */
-
-- (void)centralManagerDidUpdateState:(CBCentralManager *)central {
-    if (central.state != CBCentralManagerStatePoweredOn) {
-        ble_state.text = @"OFF";
-        ble_uuid.text = @"NA";
-        ble_rssi.text = @"NA";
-        ble_ssid.text = @"NA";
-        ble_dist.text = @"NA";
-        return;
-    }
-    
-    if (central.state == CBCentralManagerStatePoweredOn) {
-        // Scan for devices
-        [centralManager scanForPeripheralsWithServices:nil options:@{ CBCentralManagerScanOptionAllowDuplicatesKey : @YES }];
-  //@[[CBUUID UUIDWithString:@""]] options:@{ CBCentralManagerScanOptionAllowDuplicatesKey : @YES }];
-        ble_state.text = @"ON";
-        ble_uuid.text = BEACON_UUID;
-        ble_rssi.text = @"NA";
-        ble_ssid.text = @"NA";
-        ble_dist.text = @"NA";
-        NSLog(@"Scanning started");
-    }
-}
-
-- (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI {
-    
-    NSString *uuidString = [NSString stringWithFormat:@"%@", [[peripheral identifier] UUIDString]];
-    if ([uuidString isEqualToString:BEACON_UUID]) {
-        //NSLog(@"Discovered %@ at %@", peripheral.identifier, RSSI);
-        
-        //TODO add timeout
-        if ([RSSI intValue] < -90) {
-            ble_dist.text = @"FAR";
-        } else if ([RSSI intValue] > -90 & [RSSI intValue] < -60) {
-            ble_dist.text = @"CLOSE";
-        } else if ([RSSI intValue] > -61) {
-            ble_dist.text = @"VERY CLOSE";
-        }
-        
-        ble_rssi.text = [RSSI stringValue];
-        if (peripheral.name != nil) {
-            ble_ssid.text = peripheral.name;
-        } else {
-            ble_ssid.text = @"(null)";
-        }
-    }
-    if (![beaconList containsObject:peripheral.identifier]) {
-        [beaconList addObject:peripheral.identifier];
-    }
-}
-
-- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
-{
-    return [beaconList count];
-}
-
-- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
-{
-    NSLog(@"beaconList count: %d", [beaconList count]);
-
-    
-    static NSString *simpleTableIdentifier = @"SimpleTableCell";
-    
-    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:simpleTableIdentifier];
-    
-    if (cell == nil) {
-        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:simpleTableIdentifier];
-    }
-    
-    CBPeripheral * cur_peripheral = [beaconList objectAtIndex:indexPath.row];
-    NSString *uuidString =  [NSString stringWithFormat:@"%@", [[cur_peripheral identifier] UUIDString]];
-    NSLog(uuidString);
-    cell.textLabel.text = uuidString;
-    return cell;
-}
 
 
 - (void)viewWillAppear:(BOOL)animated
@@ -523,8 +420,7 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/10000; // Limit exposure duration t
 	
 	self.manualHUDExposureView.hidden = (control.selectedSegmentIndex == 1) ? NO : YES; //camera setting
 	self.manualHUDWhiteBalanceView.hidden = (control.selectedSegmentIndex == 2) ? NO : YES; //server setting
-    self.manualHUDFocusView.hidden = (control.selectedSegmentIndex == 3) ? NO : YES; //BLE setting
-
+    
 }
 
 - (IBAction)changeFocusMode:(id)sender
@@ -756,11 +652,10 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/10000; // Limit exposure duration t
 - (void)positionManualHUD
 {
 	// Since we only show one manual view at a time, put them all in the same place (at the top)
-	self.manualHUDExposureView.frame = CGRectMake(self.manualHUDFocusView.frame.origin.x, self.manualHUDFocusView.frame.origin.y, self.manualHUDExposureView.frame.size.width, self.manualHUDExposureView.frame.size.height);
+	self.manualHUDExposureView.frame = CGRectMake(self.manualHUDExposureView.frame.origin.x, self.manualHUDExposureView.frame.origin.y, self.manualHUDExposureView.frame.size.width, self.manualHUDExposureView.frame.size.height);
     
-	self.manualHUDWhiteBalanceView.frame = CGRectMake(self.manualHUDFocusView.frame.origin.x, self.manualHUDFocusView.frame.origin.y, self.manualHUDWhiteBalanceView.frame.size.width, self.manualHUDWhiteBalanceView.frame.size.height);
+	self.manualHUDWhiteBalanceView.frame = CGRectMake(self.manualHUDExposureView.frame.origin.x, self.manualHUDExposureView.frame.origin.y, self.manualHUDWhiteBalanceView.frame.size.width, self.manualHUDWhiteBalanceView.frame.size.height);
     
-    self.manualHUDFocusView.frame = CGRectMake(self.manualHUDFocusView.frame.origin.x, self.manualHUDFocusView.frame.origin.y, self.manualHUDFocusView.frame.size.width, self.manualHUDFocusView.frame.size.height);
 }
 
 - (void)setSlider:(UISlider*)slider highlightColor:(UIColor*)color
@@ -1211,35 +1106,11 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/10000; // Limit exposure duration t
     NSLog(@"Setting CUSTOM as server");
 }
 
-- (IBAction)pfet_btn:(id)sender {
-    [server_box setText:PFET_URL];
-    data.server_name = PFET_URL;
-    NSLog(@"Setting PFET as server");
+- (IBAction)wnec_btn:(id)sender {
+    [server_box setText:WNEC_URL];
+    data.server_name = WNEC_URL;
+    NSLog(@"Setting WNEC as server");
 }
-
-//- (IBAction)mem_btn:(id)sender {
-//    [server_box setText:MEM_URL];
-//    data.server_name = MEM_URL;
-//    NSLog(@"Setting MEM as server");
-//}
-//
-//- (IBAction)pat_btn:(id)sender {
-//    [server_box setText:PAT_URL];
-//    data.server_name = PAT_URL;
-//    NSLog(@"Setting PAT as server");
-//}
-//
-//- (IBAction)cap_btn:(id)sender {
-//    [server_box setText:CAP_URL];
-//    data.server_name = CAP_URL;
-//    NSLog(@"Setting CAP as server");
-//}
-//
-//- (IBAction)ninja_btn:(id)sender {
-//    [server_box setText:NINJA_URL];
-//    data.server_name = NINJA_URL;
-//    NSLog(@"Setting NINJA as server");
-//}
 
 - (IBAction)test_btn:(id)sender {
     [server_box setText:TEST_URL];
@@ -1273,7 +1144,7 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/10000; // Limit exposure duration t
     [request setHTTPMethod:@"POST"];
     [request setURL:[NSURL URLWithString:url]];
     [request setValue:@"image/jpeg" forHTTPHeaderField:@"Content-Type"];
-    [request setValue:@"iphone5" forHTTPHeaderField:@"x-luxapose-phone-type"];
+    [request setValue:@"iphone7" forHTTPHeaderField:@"x-luxapose-phone-type"];
     [request setValue:which_camera forHTTPHeaderField:@"x-luxapose-camera"];
     [request setValue:@"lambert" forHTTPHeaderField:@"x-luxapose-user"];
     [request setValue:[[[UIDevice currentDevice] identifierForVendor] UUIDString] forHTTPHeaderField:@"x-luxapose-device-uuid"];
@@ -1286,110 +1157,6 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/10000; // Limit exposure duration t
     }
     
 }
-
-
-/*
-// CBPeripheralDelegate - Invoked when you discover the peripheral's available services.
-- (void)peripheral:(CBPeripheral *)peripheral didDiscoverServices:(NSError *)error
-{
-    NSLog(@"didDiscoverServices");
-}
-
-// Invoked when you discover the characteristics of a specified service.
-- (void)peripheral:(CBPeripheral *)peripheral didDiscoverCharacteristicsForService:(CBService *)service error:(NSError *)error
-{
-    NSLog(@"didDiscoverServicesCharacteristics");
-}
-
-// Invoked when you retrieve a specified characteristic's value, or when the peripheral device notifies your app that the characteristic's value has changed.
-- (void)peripheral:(CBPeripheral *)peripheral didUpdateValueForCharacteristic:(CBCharacteristic *)characteristic error:(NSError *)error
-{
-}
-
-// Instance method to get RSSI
-- (void) getRSSI:(CBCharacteristic *)characteristic error:(NSError *)error
-{
-}
-
-// Instance method to get the manufacturer name of the device
-- (void) getSSID:(CBCharacteristic *)characteristic
-{
-}
-// Instance method to get the body location of the device
-- (void) getBeaconLocation:(CBCharacteristic *)characteristic
-{
-}
-*/
- 
-/*
-- (int) initBLE
-{
-    // watch possibly broken array alloc here...
-    //NSArray *services = @[[CBUUID UUIDWithString:BEACON_TYPE1_SERVICE_UUID], [CBUUID UUIDWithString:BEACON_TYPE2_SERVICE_UUID], [CBUUID UUIDWithString:BEACON_TYPE3_SERVICE_UUID]];
-    //CBCentralManager *centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil];
-    //self.centralManager = centralManager;
-    _centralManager = [[CBCentralManager alloc] initWithDelegate:self queue:nil];
-     [_centralManager scanForPeripheralsWithServices:@[[CBUUID UUIDWithString:BEACON_TYPE1_SERVICE_UUID]] options:@{ CBCentralManagerScanOptionAllowDuplicatesKey : @YES }];
-    //[self.centralManager scanForPeripheralsWithServices:self.services options:nil];
-    return 1;
-}
-
-- (void)centralManagerDidUpdateState:(CBCentralManager *)central
-{
-    
-    // Determine the state of the peripheral
-    if ([central state] == CBCentralManagerStatePoweredOff) {
-        self.ble_state.text = @"OFF";
-    }
-    else if ([central state] == CBCentralManagerStatePoweredOn) {
-        self.ble_state.text = @"ON";
-    }
-    else if ([central state] == CBCentralManagerStateUnauthorized) {
-        self.ble_state.text = @"UnAuth";
-    }
-    else if ([central state] == CBCentralManagerStateUnknown) {
-        self.ble_state.text = @"Unknown";
-    }
-    else if ([central state] == CBCentralManagerStateUnsupported) {
-        self.ble_state.text = @"Unsupported";
-    }
-}
-
-
-- (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI
-{
-    NSLog(@"didDiscoverPeripheral");
-    NSString *localName = [advertisementData objectForKey:CBAdvertisementDataLocalNameKey];
-    if ([localName length] > 0) {
-        NSLog(@"Found a beacon: %@", localName);
-        
-        // Commented out... Do we ever want to stop scanning for demo?
-        //[self.centralManager stopScan];
-
-        // Currently setting to most recent found... might need to debounce
-        self.ble_ssid.text = localName;
-        self.beaconPeripheral = peripheral;
-        peripheral.delegate = self;
-        //[self.centralManager connectPeripheral:peripheral options:nil];
-    }
-}
- 
-
-- (void)centralManager:(CBCentralManager *)central didDiscoverPeripheral:(CBPeripheral *)peripheral advertisementData:(NSDictionary *)advertisementData RSSI:(NSNumber *)RSSI {
-    
-    NSLog(@"Discovered %@ at %@", peripheral.name, RSSI);
-    
-    if (_discoveredPeripheral != peripheral) {
-        // Save a local copy of the peripheral, so CoreBluetooth doesn't get rid of it
-        _discoveredPeripheral = peripheral;
-        
-        // And connect
-        NSLog(@"Connecting to peripheral %@", peripheral);
-        [_centralManager connectPeripheral:peripheral options:nil];
-    }
-}
-*/
-
 
 
 - (IBAction)singlepic_motion:(id)sender {

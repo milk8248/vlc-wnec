@@ -9,14 +9,12 @@
 */
 
 @import UIKit;
-#import <CoreLocation/CoreLocation.h>
 
-@interface AAPLAppDelegate : UIResponder <UIApplicationDelegate, CLLocationManagerDelegate>
+@interface AAPLAppDelegate : UIResponder <UIApplicationDelegate>
 
 
 
 
 @property (nonatomic) UIWindow *window;
-@property CLProximity lastProximity;
 
 @end
