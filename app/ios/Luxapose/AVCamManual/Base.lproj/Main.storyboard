@@ -140,6 +140,55 @@
                                         </subviews>
                                         <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                     </view>
+                                    <view opaque="NO" contentMode="scaleToFill" fixedFrame="YES" translatesAutoresizingMaskIntoConstraints="NO" id="ZOg-0c-nVn" userLabel="ManualHUD PostitionView">
+                                        <rect key="frame" x="6" y="269" width="320" height="128"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="X-axis" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="H8i-Lj-yW8">
+                                                <rect key="frame" x="39" y="25" width="62" height="21"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <color key="textColor" red="0.99968444079999996" green="1" blue="0.051762930870000001" alpha="1" colorSpace="calibratedRGB"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Y-axis" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="ps2-LU-4sq">
+                                                <rect key="frame" x="126" y="25" width="62" height="21"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <color key="textColor" red="0.99968444079999996" green="1" blue="0.051762930870000001" alpha="1" colorSpace="calibratedRGB"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="Z-axis" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Q5P-Ay-VTb">
+                                                <rect key="frame" x="209" y="25" width="62" height="21"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <color key="textColor" red="0.99968444079999996" green="1" blue="0.051762930870000001" alpha="1" colorSpace="calibratedRGB"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="SJh-Jl-IFK" userLabel="PostitionY">
+                                                <rect key="frame" x="126" y="54" width="62" height="21"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <color key="textColor" red="0.99968444079999996" green="1" blue="0.051762930870000001" alpha="1" colorSpace="calibratedRGB"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="J6a-ca-Ff1" userLabel="PostitionX">
+                                                <rect key="frame" x="39" y="54" width="62" height="21"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <color key="textColor" red="0.99968444079999996" green="1" blue="0.051762930870000001" alpha="1" colorSpace="calibratedRGB"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" text="0" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="GMe-XG-rKs" userLabel="PostitionZ">
+                                                <rect key="frame" x="209" y="54" width="62" height="21"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <color key="textColor" red="0.99968444079999996" green="1" blue="0.051762930870000001" alpha="1" colorSpace="calibratedRGB"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                        </subviews>
+                                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.0" colorSpace="calibratedRGB"/>
+                                    </view>
                                     <button opaque="NO" contentMode="scaleToFill" misplaced="YES" enabled="NO" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="JI8-7Z-lWW">
                                         <rect key="frame" x="124" y="515" width="72" height="36"/>
                                         <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.29999999999999999" colorSpace="custom" customColorSpace="sRGB"/>
@@ -163,7 +212,8 @@
                                         <segments>
                                             <segment title="Off" width="42"/>
                                             <segment title="Camera Settings" width="110"/>
-                                            <segment title="Server Settings" width="110"/>
+                                            <segment title="Server" width="60"/>
+                                            <segment title="Postition" width="66.5"/>
                                         </segments>
                                         <color key="tintColor" red="1" green="1" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                                         <connections>
@@ -195,11 +245,15 @@
                         <outlet property="ISONameLabel" destination="JBl-vY-OrN" id="KLm-Tl-OaZ"/>
                         <outlet property="ISOSlider" destination="Iy7-q4-NeD" id="vii-kI-NWJ"/>
                         <outlet property="ISOValueLabel" destination="z1M-XW-AAt" id="7NX-MK-fEU"/>
+                        <outlet property="PodtitionXLable" destination="J6a-ca-Ff1" id="7U8-kL-nwP"/>
+                        <outlet property="PodtitionYLable" destination="SJh-Jl-IFK" id="kmK-hA-Ux0"/>
+                        <outlet property="PodtitionZLable" destination="GMe-XG-rKs" id="EOf-eq-nFR"/>
                         <outlet property="cameraButton" destination="dTk-ds-YFy" id="ck6-TM-1iY"/>
                         <outlet property="exposureDurationNameLabel" destination="ZF9-TM-9Xc" id="ueJ-Wc-Fhi"/>
                         <outlet property="exposureDurationSlider" destination="biU-Ca-QQ5" id="dST-cI-l23"/>
                         <outlet property="exposureDurationValueLabel" destination="ol3-kE-NEk" id="yDr-5O-ZU3"/>
                         <outlet property="manualHUDExposureView" destination="Brt-AJ-64I" id="UfL-65-KKM"/>
+                        <outlet property="manualHUDPostitionView" destination="ZOg-0c-nVn" id="csf-fA-1T8"/>
                         <outlet property="manualHUDWhiteBalanceView" destination="b6P-11-epR" id="sN5-E1-nB8"/>
                         <outlet property="previewView" destination="sVI-mX-69Q" id="UGh-um-teZ"/>
                         <outlet property="server_box" destination="v0d-oW-4Aw" id="4nY-94-vGW"/>

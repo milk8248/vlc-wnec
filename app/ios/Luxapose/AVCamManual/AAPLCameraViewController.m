@@ -56,6 +56,7 @@ static void *DeviceWhiteBalanceGainsContext = &DeviceWhiteBalanceGainsContext;
 
 @property (nonatomic, strong) NSArray *exposureModes;
 @property (nonatomic, weak) IBOutlet UIView *manualHUDExposureView;
+@property (nonatomic, weak) IBOutlet UIView *manualHUDPostitionView;
 @property (nonatomic, weak) IBOutlet UISegmentedControl *exposureModeControl;
 @property (nonatomic, weak) IBOutlet UISlider *exposureDurationSlider;
 @property (nonatomic, weak) IBOutlet UILabel *exposureDurationNameLabel;
@@ -69,6 +70,10 @@ static void *DeviceWhiteBalanceGainsContext = &DeviceWhiteBalanceGainsContext;
 @property (nonatomic, weak) IBOutlet UISlider *exposureTargetOffsetSlider;
 @property (nonatomic, weak) IBOutlet UILabel *exposureTargetOffsetNameLabel;
 @property (nonatomic, weak) IBOutlet UILabel *exposureTargetOffsetValueLabel;
+@property (nonatomic, weak) IBOutlet UILabel *PodtitionXLable;
+@property (nonatomic, weak) IBOutlet UILabel *PodtitionYLable;
+@property (nonatomic, weak) IBOutlet UILabel *PodtitionZLable;
+
 
 @property (nonatomic, strong) NSArray *whiteBalanceModes;
 @property (nonatomic, weak) IBOutlet UIView *manualHUDWhiteBalanceView;
@@ -92,6 +97,7 @@ static void *DeviceWhiteBalanceGainsContext = &DeviceWhiteBalanceGainsContext;
 @property (nonatomic, readonly, getter = isSessionRunningAndDeviceAuthorized) BOOL sessionRunningAndDeviceAuthorized;
 @property (nonatomic) BOOL lockInterfaceRotation;
 @property (nonatomic) id runtimeErrorHandlingObserver;
+@property (strong,nonatomic) NSMutableData *datas;
 
 // Server Buttons
 - (IBAction)server_box_event:(id)sender;
@@ -229,6 +235,7 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/10000; // Limit exposure duration t
 	
 	self.manualHUDExposureView.hidden = YES;
 	self.manualHUDWhiteBalanceView.hidden = YES; //server
+    self.manualHUDPostitionView.hidden=YES; //Postition view
 }
 
 /*
@@ -375,6 +382,8 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/10000; // Limit exposure duration t
                 UIImage *image = [[UIImage alloc] initWithData:imageData];
                 //TODO send image here
                 [self postImage:image];
+                [self GetPostition];
+                
                 //Save Image
                 //[[[ALAssetsLibrary alloc] init] writeImageToSavedPhotosAlbum:[image CGImage] orientation:(ALAssetOrientation)[image imageOrientation] completionBlock:nil];
             }
@@ -420,6 +429,7 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/10000; // Limit exposure duration t
 	
 	self.manualHUDExposureView.hidden = (control.selectedSegmentIndex == 1) ? NO : YES; //camera setting
 	self.manualHUDWhiteBalanceView.hidden = (control.selectedSegmentIndex == 2) ? NO : YES; //server setting
+    self.manualHUDPostitionView.hidden = (control.selectedSegmentIndex == 3) ? NO : YES;
     
 }
 
@@ -655,6 +665,7 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/10000; // Limit exposure duration t
 	self.manualHUDExposureView.frame = CGRectMake(self.manualHUDExposureView.frame.origin.x, self.manualHUDExposureView.frame.origin.y, self.manualHUDExposureView.frame.size.width, self.manualHUDExposureView.frame.size.height);
     
 	self.manualHUDWhiteBalanceView.frame = CGRectMake(self.manualHUDExposureView.frame.origin.x, self.manualHUDExposureView.frame.origin.y, self.manualHUDWhiteBalanceView.frame.size.width, self.manualHUDWhiteBalanceView.frame.size.height);
+    self.manualHUDPostitionView.frame = CGRectMake(self.manualHUDExposureView.frame.origin.x, self.manualHUDExposureView.frame.origin.y, self.manualHUDPostitionView.frame.size.width, self.manualHUDPostitionView.frame.size.height);
     
 }
 
@@ -1117,6 +1128,40 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/10000; // Limit exposure duration t
     data.server_name = TEST_URL;
     NSLog(@"Setting TEST as server");
 }
+
+-(void) GetPostition{
+    NSURL *url = [NSURL URLWithString:@"http://140.118.170.52:3000/user"];
+    NSURLRequest *request = [[NSURLRequest alloc] initWithURL:url];
+    NSURLConnection *connection = [[NSURLConnection alloc]
+                                       initWithRequest:request delegate:self];
+    if(connection){
+        _datas=[NSMutableData new];
+    }
+}
+        
+-(void) connection:(NSURLConnection *)connection didReceiveData:(NSData *)data{
+    [_datas appendData:data];
+}
+
+-(void) connection:(NSURLConnection *)connection didFailWithError:(NSError *)error{
+    NSLog(@"%@",[error localizedDescription]);
+}
+
+-(void) connectionDidFinishLoading:(NSURLConnection*) connection{
+    NSDictionary* dict = [NSJSONSerialization JSONObjectWithData:_datas options:NSJSONReadingAllowFragments error:nil];
+    
+    NSDictionary *postition_data = [dict objectForKey:@"data"];
+    NSArray *rx_location = [postition_data valueForKey:@"rx_location"][0];
+    //NSArray *rx_location=@[@123, @"Hello, World!", @42];
+
+    //NSLog(@"%@",PostitionX);
+    //NSLog(@"%@",[rx_location objectAtIndex:1]);
+    //NSLog(@"%@",[rx_location objectAtIndex:2]);
+    self.PodtitionXLable.text = [NSString stringWithFormat:@"%.2f", [[rx_location objectAtIndex:0] doubleValue]];
+    self.PodtitionYLable.text = [NSString stringWithFormat:@"%.2f", [[rx_location objectAtIndex:1] doubleValue]];
+    self.PodtitionZLable.text = [NSString stringWithFormat:@"%.2f", [[rx_location objectAtIndex:2] doubleValue]];
+}
+        
 
 - (void) postImage:(UIImage *) image  {
     
