@@ -33,6 +33,9 @@ else:
 	from SimpleHTTPServer import SimpleHTTPRequestHandler
 	import SocketServer as socketserver
 
+from socketIO_client import SocketIO
+
+
 PORT = 4908
 
 def work_fn(work_queue):
@@ -77,7 +80,7 @@ def on_image_received(input_image_path):
 			raise NotImplementedError('Unknown phone type for image dimensions: ' + str(size))
 
 	# Override room to ipsn for demo
-	room = rooms.test_rig
+	room = rooms.demo_floor
 
 	#try:
 	#	hint = headers['x-luxapose-ble-loc-hints'].split()[0].strip()
@@ -92,6 +95,9 @@ def on_image_received(input_image_path):
 
 	source_ip = headers['x-luxapose-source-ip']
 	user = headers['x-luxapose-user']
+	origin_location = headers['x-luxapose-origin-location']
+	origin_location = origin_location.split(',')
+	logger.info('origin_location = {}'.format(origin_location))
 
 	# Copy work to an output file
 	logger.copy_to_file(output_path)
@@ -120,20 +126,37 @@ def on_image_received(input_image_path):
 		m = map(lambda x: sum(x)/len(x), zip(*m_avg))
 		logger.primary('m_avg_loc = {}'.format(m))
 
-		#data = {
-		#		'rx_location' : list(rx_location),
-		#		'rx_rotation' : rx_rotation.tolist(),
-		#		'location_error' : location_error,
-		#		'image_name' : img_name,
-		#		'phone_ip' : source_ip,
-		#		'user': user,
-		#}
+		# Start Post to GATD
+		data = {
+				'rx_location' : list(rx_location),
+				'rx_rotation' : rx_rotation.tolist(),
+				'location_error' : location_error,
+				'image_name' : img_name,
+				'phone_ip' : source_ip,
+				'user': user,
+				'origin_location': list(origin_location)
+		}
 
-		#req = urllib2.Request('http://gatd.eecs.umich.edu:8081/WEgwAGyc9N')
-		#req.add_header('Content-Type', 'application/json')
+		req = urllib2.Request('http://140.118.170.52:3000/user')
+		req.add_header('Content-Type', 'application/json')
 
-		#response = urllib2.urlopen(req, json.dumps(data))
-		#logger.info('Result posted to gatd')
+		try:
+			response = urllib2.urlopen(req, json.dumps(data))
+			logger.info('Result posted to GATD')
+		except IOError, e:
+			logger.info('Failed to post to GATD')
+
+		
+		#End Post to GATD
+
+		# Start Send to SocketIO Server
+		try:
+			socketIO = SocketIO('140.118.170.52', 8124)
+			socketIO.emit('sendchat',data)
+			logger.info('Result sended to socketIO')
+		except socket.error as e:
+			logger.info('Failed to post to socketIO')
+		# socketIO.wait(seconds=1)
 
 	finally:
 		logger.close_copy_file()
@@ -190,7 +213,7 @@ class SimpleHTTPRequestHandlerWithPUT(SimpleHTTPRequestHandler):
 			#logger.debug(self.__dict__)
 			self.send_response(500)
 			raise
-
+	
 if __name__ == '__main__':
 	socketserver.TCPServer.allow_reuse_address = True
 	socketserver.ForkingTCPServer.allow_reuse_address = True
