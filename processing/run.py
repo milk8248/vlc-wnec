@@ -56,7 +56,7 @@ Control debug level with DEBUG evinronment environment variable.
 
 	#parser.print_help()
 
-	os.environ["DEBUG"]="1"
+	os.environ["DEBUG"]="2"
 	os.environ["PICS"]="1"
 
 	np.set_printoptions(suppress=True)
