@@ -1,0 +1,25 @@
+{
+  "name": "nodexpress",
+  "version": "1.0.0",
+  "description": "node express rest api",
+  "main": "app.js",
+  "dependencies": {
+    "body-parser": "^1.16.1",
+    "express": "^4.14.0",
+    "mongoose": "^4.8.4",
+    "socket.io": "^1.7.3"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "socket.io",
+    "node",
+    "express",
+    "rest",
+    "api"
+  ],
+  "author": "lambert",
+  "license": "ISC"
+}
