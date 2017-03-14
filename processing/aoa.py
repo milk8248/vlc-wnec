@@ -17,8 +17,8 @@ import pretty_logger
 logger = pretty_logger.get_logger()
 
 def get_Z_offset_guess(room):
-	# Assume we are ~2.5 m away in Z
-	DEFAULT_OFFSET = 2.5
+	# Assume we are ~2.0 m away in Z
+	DEFAULT_OFFSET = 2.0
 
 	if room.units == 'm':
 		offset = DEFAULT_OFFSET
@@ -206,6 +206,7 @@ def aoa(room, lights, Zf, k_init_method='scipy_basin', actual_location=None):
 		logger.error("Unknown k_init_method. Valid options are:\n"\
 				"  static YS_brute scipy_brute scipy_basin")
 
+	#XXXXXXXXXXXXXXXXXXXXXXXX
 	logger.debug('{} (k_vals_init from {})'.format(k_vals_init, k_init_method))
 	k_vals, ier = scipy.optimize.leastsq(least_squares_scaling_factors, k_vals_init)
 
@@ -218,12 +219,14 @@ def aoa(room, lights, Zf, k_init_method='scipy_basin', actual_location=None):
 	logger.end_op()
 
 	def least_squares_rx_location(rx_location):
+		#logger.debug('{} (rx_location)'.format(rx_location))
 		dists = []
 		for i in xrange(len(lights)):
 			dists.append(
 					numpy.sum(numpy.square(rx_location - transmitters[i])) -\
 					k_vals[i]**2 * image_squared_distance[i]
 					)
+		#logger.debug('{} (dists)'.format(numpy.sum(dists)**2))
 		return dists
 
 	def initial_position_guess(room, transmitters):
@@ -242,14 +245,21 @@ def aoa(room, lights, Zf, k_init_method='scipy_basin', actual_location=None):
 	rx_location, ier = scipy.optimize.leastsq(least_squares_rx_location, rx_location_init)
 	if ier not in (1,2,3,4):
 		raise ValueError("Least squares failed to minimize location function")
+	#Fix Error
+	#rx_location=rx_location+numpy.array([1.7,-2.2,0])
+
 	logger.debug('   rx_location = {}'.format(rx_location))
 	logger.end_op()
 
 	def least_squares_rotation(rotation):
 		rotation = rotation.reshape((3,3))
+		#logger.debug('   rotation = {}'.format(rotation))
+		#logger.debug('   rx_location.reshape(3,1) = {}'.format(rx_location.reshape(3,1)))
 		r = transmitters.T - rotation.dot(absolute_centers) - rx_location.reshape(3,1)
+		#logger.debug('   R = {}'.format(r))
 		r = numpy.square(r)
 		r = r.flatten()
+		#logger.debug('   R = {}'.format(r))
 		return r
 
 	# Compute the scaled and transformed transmitter locations
@@ -262,6 +272,7 @@ def aoa(room, lights, Zf, k_init_method='scipy_basin', actual_location=None):
 	# and in the return value.
 	logger.start_op('Minimize rotation function')
 	rx_rotation_init = numpy.array([[0, -1, 0], [1, 0, 0], [0, 0, 1]])
+	logger.debug('rx_rotation_init =\n{}'.format(rx_rotation_init))
 	rx_rotation, ier = scipy.optimize.leastsq(least_squares_rotation, rx_rotation_init)
 	if ier not in (1,2,3,4):
 		raise ValueError("Least squares failed to minimize rotation function")
