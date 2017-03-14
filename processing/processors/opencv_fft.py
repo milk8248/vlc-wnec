@@ -20,7 +20,7 @@ dbg_step = 0
 def dbg_fname(fname):
 	global dbg_step
 	dbg_step += 1
-	return './tmp/luxp-opencv_fft-step{}-'.format(dbg_step) + fname + '.png'
+	return './tmp/opencv_fft/luxp-opencv_fft-step{}-'.format(dbg_step) + fname + '.png'
 
 def dbg_save(fname, array):
 	fname = dbg_fname(fname)
@@ -334,7 +334,7 @@ def imag_proc(file_name, num_of_tx, camera):
 							centers[i][1],
 							centers[i][0],
 							),
-						(centers[i][1]+100, centers[i][0]),
+						(centers[i][1]-100, centers[i][0]+100),
 						cv2.FONT_HERSHEY_TRIPLEX,
 						1,
 						YELLOW)
@@ -343,7 +343,7 @@ def imag_proc(file_name, num_of_tx, camera):
 							contours_kept_image,
 							"{} Hz".format(
 								int(peak_freq)),
-							(centers[i][1]+100, centers[i][0]+50),
+							(centers[i][1]-75, centers[i][0]+150),
 							cv2.FONT_HERSHEY_TRIPLEX,
 							1,
 							YELLOW)
