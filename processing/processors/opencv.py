@@ -15,7 +15,11 @@ sys.path.append('..')
 import pretty_logger
 logger = pretty_logger.get_logger()
 
+def dbg_fname(fname):
+	return './tmp/opencv/' + fname + '.png'
+
 def dbg_save(fname, array):
+	fname = dbg_fname(fname)
 	cv2.imwrite(fname, array)
 	logger.debug('Saved WIP to {}'.format(fname))
 
@@ -26,7 +30,7 @@ def dbg_plot_subplots(fname):
 	logger.end_op()
 
 @logger.op("Process image {0} with {1} transmitter(s) taken with {2.__name__}")
-def imag_proc(file_name, num_of_tx, camera, debug):
+def imag_proc(file_name, num_of_tx, camera):
 	BLACK  = (  0,   0,   0)
 	WHITE  = (255, 255, 255)
 	BLUE   = (255,   0,   0)
@@ -36,12 +40,17 @@ def imag_proc(file_name, num_of_tx, camera, debug):
 	TEAL   = (255, 255,   0)
 	MAGENTA= (255,   0, 255)
 
+	if 'PICS' in os.environ:
+		debug = True
+	else:
+		debug = False
+
 	# Load image and convert to grayscale
 	logger.start_op("Loading image")
 	gray_image = cv2.imread(file_name, cv2.IMREAD_GRAYSCALE)
 	logger.debug('gray_image.shape = {}'.format(gray_image.shape))
 	if debug:
-		dbg_save('/tmp/gray_image.png', gray_image)
+		dbg_save('gray_image', gray_image)
 	logger.end_op()
 
 	# Handle orientation
@@ -49,7 +58,7 @@ def imag_proc(file_name, num_of_tx, camera, debug):
 	if gray_image.shape[1] > gray_image.shape[0]:
 		gray_image = numpy.rot90(gray_image, 3)
 	if debug:
-		dbg_save('/tmp/gray_image_rotated.png', gray_image)
+		dbg_save('gray_image_rotated', gray_image)
 	logger.debug('gray_image.shape = {}'.format(gray_image.shape))
 	logger.end_op()
 
@@ -59,7 +68,7 @@ def imag_proc(file_name, num_of_tx, camera, debug):
 	m2 = cv2.blur(gray_image, (50,50)) # faster and good enough
 	#m2 = cv2.blur(gray_image, (150,150)) # faster and good enough
 	if debug:
-		dbg_save('/tmp/after_blur.png', m2)
+		dbg_save('after_blur', m2)
 	logger.debug('m2.shape = {}'.format(m2.shape))
 	logger.end_op()
 
@@ -67,7 +76,7 @@ def imag_proc(file_name, num_of_tx, camera, debug):
 	logger.start_op("Threshold image")
 	threshold, thresholded_img = cv2.threshold(m2, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
 	if debug:
-		dbg_save('/tmp/thresholded_img.png', thresholded_img)
+		dbg_save('thresholded_img', thresholded_img)
 	logger.end_op()
 
 	# Find and label disjoint sets of pixels (each transmitter blob)
@@ -85,14 +94,14 @@ def imag_proc(file_name, num_of_tx, camera, debug):
 		# drawContours draws contours on the supplied image, need a copy
 		contour_image = gray_image.copy()
 		cv2.drawContours(contour_image, contours, -1, 255, 3)
-		dbg_save('/tmp/contours_on_gray.png', contour_image)
+		dbg_save('contours_on_gray', contour_image)
 		contour_blur_image = m2.copy()
 		cv2.drawContours(contour_blur_image, contours, -1, 255, 3)
-		dbg_save('/tmp/contours_on_blur.png', contour_blur_image)
+		dbg_save('contours_on_blur', contour_blur_image)
 		dim = (gray_image.shape[0], gray_image.shape[1], 3)
 		blank_image = numpy.zeros(dim, numpy.uint8)
 		cv2.drawContours(blank_image, contours, -1, WHITE, 3)
-		dbg_save('/tmp/contours_only.png', blank_image)
+		dbg_save('contours_only', blank_image)
 
 	# And then fitting a circle to that contour
 	centers = []
@@ -128,11 +137,11 @@ def imag_proc(file_name, num_of_tx, camera, debug):
 			px_scale = max(1, int(round(.05*radius)))
 			cv2.circle(blank_image, center, px_scale, YELLOW, -1)
 			cv2.circle(blank_image, center, radius, YELLOW, 3)
-			dbg_save('/tmp/counters_with_center_and_circle.png', blank_image)
+			dbg_save('counters_with_center_and_circle', blank_image)
 			gray_circle = cv2.cvtColor(gray_image, cv2.COLOR_GRAY2BGR)
 			cv2.circle(gray_circle, center, px_scale, TEAL, -1)
 			cv2.circle(gray_circle, center, radius, TEAL, 3)
-			dbg_save('/tmp/orig_with_circle.png', gray_circle)
+			dbg_save('orig_with_circle', gray_circle)
 
 		r = radius + 30
 		x1 = max(0, center[0]-r)
@@ -141,7 +150,7 @@ def imag_proc(file_name, num_of_tx, camera, debug):
 		y2 = min(gray_image.shape[1], center[1]+r+1)
 		one_light = gray_image[x1:x2, y1:y2]
 		if debug:
-			dbg_save('/tmp/one-{}_light.png'.format(cnt), one_light)
+			dbg_save('one-{}_light'.format(cnt), one_light)
 
 		def image_to_impulses(factor):
 			blur_width = int(factor*radius)+1
@@ -165,10 +174,10 @@ def imag_proc(file_name, num_of_tx, camera, debug):
 			post_canny = cv2.Canny(one_blur, lowThreshold, highThreshold, kernel_size)
 
 			if debug:
-				dbg_save('/tmp/one-{}_blur.png'.format(cnt), one_blur)
-				dbg_save('/tmp/one-{}_thres.png'.format(cnt), one_thresholded_img)
-				#dbg_save('/tmp/one-{}_adapt.png'.format(cnt), one_adapt)
-				dbg_save('/tmp/one-{}_canny.png'.format(cnt), cv2.add(one_light, post_canny))
+				dbg_save('one-{}_blur'.format(cnt), one_blur)
+				dbg_save('one-{}_thres'.format(cnt), one_thresholded_img)
+				#dbg_save('one-{}_adapt'.format(cnt), one_adapt)
+				dbg_save('one-{}_canny'.format(cnt), cv2.add(one_light, post_canny))
 
 			vals = numpy.sum(post_canny, axis=0)
 
@@ -333,7 +342,7 @@ def imag_proc(file_name, num_of_tx, camera, debug):
 			idx_offset -= 1
 
 		if debug:
-			dbg_save('/tmp/one-{}_impulses.png'.format(cnt), one_impulse_img)
+			dbg_save('one-{}_impulses'.format(cnt), one_impulse_img)
 
 		intervals = get_intervals(impulses)
 		logger.debug('intervals = {}'.format(intervals))
@@ -429,7 +438,7 @@ def imag_proc(file_name, num_of_tx, camera, debug):
 					(peak_freq*2, .8*max(Y_plot)), size='large')
 
 	if debug:
-		dbg_plot_subplots('/tmp/freq_fft_transmitters.png')
+		dbg_plot_subplots('/tmp/freq_fft_transmitters')
 		dbg_plot_subplots('/tmp/freq_fft_transmitters.eps')
 
 	logger.debug('estimated_frequencies = {}'.format(estimated_frequencies))
