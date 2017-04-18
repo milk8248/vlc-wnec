@@ -17,6 +17,7 @@ import matplotlib.mlab
 import pylab
 
 from aoa import aoa
+from fingerprint import fingerprint
 
 import pretty_logger
 logger = pretty_logger.get_logger()
@@ -198,12 +199,54 @@ def aoa_full(file_name, camera, room, imag_proc,
 	for i in range(len(lights)):
 		logger.debug('\t{}: {}'.format(actual_frequencies[i], lights[i]))
 
+	lights_info = []
+	for i in xrange(len(positions_of_lights)):
+		centers = numpy.array(positions_of_lights[i])
+		centers = numpy.append(centers, camera.Zf * numpy.ones(1), axis=1)
+
+		entry = {
+					'frequency':actual_frequencies[i].tolist(),
+					'image_location':centers.tolist(),
+					'actual_location':numpy.array(room.transmitters[actual_frequencies[i]])[0].tolist()
+					}
+		lights_info=numpy.append(lights_info,entry)
+
+#20170401 edit
+	rx_location_fp=0
+
+	if 'FP' in os.environ:
+		FP = True
+	else:
+		FP = False
+
+	if FP:
+		# if len(lights)<len(room.transmitters):
+			
+		rx_location_fp = fingerprint(
+					lights_info,
+					camera, room,
+					imag_proc
+					)
+		# logger.debug('rx_location_fp = {}'.format(rx_location_fp))
+
 	# Some frequencies have multiple locations, need to pick one
 	#
 	# lights = resolve_aliased_frequncies(lights)
 
 	# AoA calcualation requires at least 3 transmitters
 	assert len(lights) >= 3, "AoA calcualation requires at least 3 transmitters"
+
+	
+	# lights=[[[-429,-205],[[-50,-60,0],]],[[-424,531],[[50,-60,0],]],[[12,158],[[0,0,0],]],[[458,-217],[[-50,60,0],]],[[465,527],[[50,60,0],]]]
+	# lights=[[[-429,-136],[[-50,-60,0],]],[[-424,600],[[50,-60,0],]],[[12,227],[[0,0,0],]],[[458,-148],[[-50,60,0],]],[[465,596],[[50,60,0],]]]
+	# lights=[[[-440,-364],[[-50,-60,0],]],[[-436,373],[[50,-60,0],]],[[0,0],[[0,0,0],]],[[445,-375],[[-50,60,0],]],[[450,367],[[50,60,0],]]]
+	# lights=[[[370,440],[[50,60,0],]],[[370,-300],[[-50,60,0],]],[[-510,-300],[[-50,-60,0],]],[[-510,440],[[50,-60,0],]],[[-70,70],[[0,0,0],]]]
+
+	#print(lights_info)
+	#centers = numpy.array(zip(*lights_info)[1])
+	#centers = numpy.append(centers, camera.Zf * numpy.ones((len(lights), 1)), axis=1)
+	#transmitters = numpy.array(zip(*numpy.array(zip(*lights_info)[2])))
+	#lights_info=zip(*[actual_frequencies,centers.tolist(),transmitters[0].tolist()])
 
 	tries = 1
 	tries_rx_loc = numpy.empty([tries, 3])
@@ -258,4 +301,4 @@ def aoa_full(file_name, camera, room, imag_proc,
 		logger.info('location error              = {}'.format(location_error))
 	'''
 
-	return (rx_location, rx_rotation, location_error)
+	return (rx_location, rx_rotation, location_error, lights_info, rx_location_fp)

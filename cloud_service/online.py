@@ -43,7 +43,7 @@ else:
 	from SimpleHTTPServer import SimpleHTTPRequestHandler
 	import SocketServer as socketserver
 
-PORT = 3908
+PORT = 4908
 os.environ["FP"]="1"
 
 def work_fn(work_queue):
@@ -137,8 +137,6 @@ def on_image_received(input_image_path):
 		logger.primary('m_avg_loc = {}'.format(m))
 
 		now_time = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
-
-		# arr=[[3000.0,[5,1,3],[6,5,3]],[3000.0,[5,1,3],[6,5,3]],[3000.0,[5,1,3],[6,5,3]]]
 		
 		# Start Post to GATD
 		data = {
@@ -165,14 +163,14 @@ def on_image_received(input_image_path):
 
 		
 		# Insert to MongoDB
-		# try:
-		# 	client = MongoClient('140.118.170.52', 27017)
-		# 	db = client.vlc_demo
-		# 	collect = db.users
-		# 	collect.insert_one(data).inserted_id
-		# 	logger.info('Result sended to MongoDB')
-		# except pymongo.errors.ConnectionFailure:
-		# 	logger.info('No MongoDB Found')
+		try:
+			client = MongoClient('140.118.170.52', 27017)
+			db = client.vlc_demo
+			collect = db.users
+			collect.insert_one(data).inserted_id
+			logger.info('Result sended to MongoDB')
+		except pymongo.errors.ConnectionFailure:
+			logger.info('No MongoDB Found')
 
 		## Post to API
 		# req = urllib2.Request('http://140.118.170.52:3000/user')

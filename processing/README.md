@@ -42,8 +42,8 @@ Command line usage:
 
 ```
 ./run.py --help
-usage: run.py [-h] [-f FILENAME] [-c CAMERA] [-m METHOD] [-r ROOM]
-              [--only-image]
+usage: run.py [-h] [-f FILENAME] [-l ACTUAL_LOCATION] [-c CAMERA] [-m METHOD]
+              [-k K_VAL_METHOD] [-r ROOM] [--only-image] [-b]
 
 Program Action: Run image processing
 
@@ -51,18 +51,29 @@ optional arguments:
   -h, --help            show this help message and exit
   -f FILENAME, --filename FILENAME
                         image to process
+  -l ACTUAL_LOCATION, --actual-location ACTUAL_LOCATION
+                        actual location in space, formatted as "x, y, z"
   -c CAMERA, --camera CAMERA
                         phone type; must be in phones/
   -m METHOD, --method METHOD
                         image processing method; must be in processors/
+  -k K_VAL_METHOD, --k-val-method K_VAL_METHOD
+                        Override k-val guess method (useful with -l)
+                        example: static, YS_brute, scipy_brute, scipy_basin, actual(must include -l)
   -r ROOM, --room ROOM  room the image was taken in; must be in rooms/
   --only-image          stop after image processing (do not attempt
                         localization)
+  -b, --box             Box light handleing
 
 Control debug level with DEBUG evinronment environment variable.
   Default: no debugging
   DEBUG=1: print debugging information
-  DEBUG=2: print debugging information and write out intermediate images to /tmp (slow)
+  DEBUG=2: print lots of debugging information
+
+  QUIET=1: Suppress most output (supersedes DEBUG)
+
+  PICS=1:  Save intermediate images (slow)
+
 ```
 
 Camera Data

@@ -9,3 +9,5 @@ stdout and sent to [gatd][gatd].
 Images are saved in `img/` and processing output / results are saved in `result/`.
 
 [gatd]: https://github.com/lab11/gatd/ "GATD Homepage"
+
+pip install -U socketIO-client

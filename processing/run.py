@@ -27,6 +27,8 @@ Control debug level with DEBUG evinronment environment variable.
   QUIET=1: Suppress most output (supersedes DEBUG)
 
   PICS=1:  Save intermediate images (slow)
+
+  FP=1:    Use Fingerprint method (Online)
 ''')
 	parser.add_argument('-f', '--filename', type=str,
 			default='./samples/test.jpg',
@@ -36,7 +38,7 @@ Control debug level with DEBUG evinronment environment variable.
 			help='actual location in space, formatted as "x, y, z"')
 	parser.add_argument('-c', '--camera', type=str,
 			#default='lumia_1020',
-			default='iphone7',
+			default='iphone7-front',
 			help='phone type; must be in phones/')
 	parser.add_argument('-m', '--method', type=str,
 			default='opencv_fft',
@@ -58,6 +60,7 @@ Control debug level with DEBUG evinronment environment variable.
 
 	os.environ["DEBUG"]="2"
 	os.environ["PICS"]="1"
+	os.environ["FP"]="1"
 
 	np.set_printoptions(suppress=True)
 
@@ -121,7 +124,7 @@ Control debug level with DEBUG evinronment environment variable.
 			logger.error('Unknown room')
 			raise
 		try:
-			rx_location, rx_rotation, location_error = aoa_full(
+			rx_location, rx_rotation, location_error, tx_lights, rx_location_fp = aoa_full(
 					args.filename,
 					camera, room,
 					imag_proc,
@@ -129,6 +132,7 @@ Control debug level with DEBUG evinronment environment variable.
 					k_val_method=args.k_val_method,
 					)
 			logger.info('rx_location = {}'.format(rx_location))
+			logger.info('rx_location_fp = {}'.format(rx_location_fp))
 			if args.actual_location is not None:
 				logger.info(' rx_loc_err = {}'.format(
 					map(abs, rx_location - args.actual_location)))

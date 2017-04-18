@@ -42,8 +42,9 @@ def get_Z_offset_guess(room):
 def aoa(room, lights, Zf, k_init_method='scipy_basin', actual_location=None):
 	# Convert argument to useful array format
 	centers = numpy.array(zip(*lights)[0])
+	centers[:, [0, 1]] = centers[:, [1, 0]]
 	transmitters = numpy.array(zip(*lights)[1])
-
+	logger.debug('centers\n{}'.format(centers))
 	# Add Zf column to centers array (light z coordinate is fixed by Zf)
 	centers = numpy.append(centers, Zf * numpy.ones((len(lights), 1)), axis=1)
 
@@ -253,18 +254,20 @@ def aoa(room, lights, Zf, k_init_method='scipy_basin', actual_location=None):
 
 	def least_squares_rotation(rotation):
 		rotation = rotation.reshape((3,3))
-		#logger.debug('   rotation = {}'.format(rotation))
-		#logger.debug('   rx_location.reshape(3,1) = {}'.format(rx_location.reshape(3,1)))
-		r = transmitters.T - rotation.dot(absolute_centers) - rx_location.reshape(3,1)
-		#logger.debug('   R = {}'.format(r))
+		
+		trans = transmitters.T.flatten()
+		trans = trans.reshape((3,len(transmitters)))
+
+		r = trans - rotation.dot(absolute_centers) - rx_location.reshape(3,1)
 		r = numpy.square(r)
 		r = r.flatten()
-		#logger.debug('   R = {}'.format(r))
+		
 		return r
 
 	# Compute the scaled and transformed transmitter locations
 	absolute_centers = centers.T * numpy.vstack([k_vals, k_vals, k_vals])
 	logger.debug('absolute_centers =\n{}'.format(absolute_centers))
+
 
 	# Compute the rotation matrix -- this requires a little bit of re-shaping
 	# because the scipy optimizer flattens matricies into 1d arrays when passing

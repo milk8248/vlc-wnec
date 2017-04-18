@@ -43,8 +43,7 @@ else:
 	from SimpleHTTPServer import SimpleHTTPRequestHandler
 	import SocketServer as socketserver
 
-PORT = 3908
-os.environ["FP"]="1"
+PORT = 5102
 
 def work_fn(work_queue):
 	while True:
@@ -144,7 +143,6 @@ def on_image_received(input_image_path):
 		data = {
 				'lights_info': list(lights_info),
 				'rx_location' : list(rx_location),
-				'rx_location_fp' : list(rx_location_fp),
 				'rx_rotation' : rx_rotation.tolist(),
 				'location_error' : location_error,
 				'image_name' : img_name,
@@ -155,24 +153,24 @@ def on_image_received(input_image_path):
 		}
 
 		# Start Send to SocketIO Server
-		try:
-			socketIO = SocketIO('140.118.170.52', 8124, wait_for_connection=False)
-			socketIO.emit('sendchat',data)
-			logger.info('Result sended to socketIO')
-		except ConnectionError:
-			logger.info('Failed to post to socketIO')
-		# socketIO.wait(seconds=1)
+		# try:
+		# 	socketIO = SocketIO('140.118.170.52', 8124, wait_for_connection=False)
+		# 	socketIO.emit('sendchat',data)
+		# 	logger.info('Result sended to socketIO')
+		# except ConnectionError:
+		# 	logger.info('Failed to post to socketIO')
+		# # socketIO.wait(seconds=1)
 
 		
-		# Insert to MongoDB
-		# try:
-		# 	client = MongoClient('140.118.170.52', 27017)
-		# 	db = client.vlc_demo
-		# 	collect = db.users
-		# 	collect.insert_one(data).inserted_id
-		# 	logger.info('Result sended to MongoDB')
-		# except pymongo.errors.ConnectionFailure:
-		# 	logger.info('No MongoDB Found')
+		## Insert to MongoDB
+		try:
+			client = MongoClient('140.118.170.52', 27017)
+			db = client.vlc_demo
+			collect = db.fingerprint
+			collect.insert_one(data).inserted_id
+			logger.info('Result sended to MongoDB')
+		except pymongo.errors.ConnectionFailure:
+			logger.info('No MongoDB Found')
 
 		## Post to API
 		# req = urllib2.Request('http://140.118.170.52:3000/user')

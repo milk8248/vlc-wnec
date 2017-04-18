@@ -7,10 +7,11 @@ import urllib2
 import random
 import socket
 import argparse
+from socketIO_client import SocketIO
 
-HOST = 'gatd.eecs.umich.edu'
-PORT = 8081
-PROFILE_ID = 'WEgwAGyc9N'
+HOST = '140.118.170.52'
+PORT = 80
+PROFILE_ID = 'mongo.php'
 POST_URL = 'http://' + HOST + ':' + str(PORT) + '/' + PROFILE_ID
 
 def post_pkt(idx, phone_ip, user):
@@ -25,14 +26,17 @@ def post_pkt(idx, phone_ip, user):
 			'user': user,
 			}
 
-	req = urllib2.Request(POST_URL)
-	req.add_header('Content-Type', 'application/json')
+	#req = urllib2.Request(POST_URL)
+	#req.add_header('Content-Type', 'application/json')
 
-	response = urllib2.urlopen(req, json.dumps(pkt))
+	#response = urllib2.urlopen(req, json.dumps(pkt))
+	socketIO = SocketIO('140.118.170.52', 8124)
+	socketIO.emit('sendchat',pkt)
+
 	print("Posted pkt #{}".format(idx))
 
 data = [
-{u'_receiver': u'http_post', u'_processor_count': 0, u'profile_id': u'WEgwAGyc9N', u'image_name': u'2014-09-07--21-56-01-00', u'rx_rotation': [[-0.0456745453247575, -0.9937648779371678, 0.04103443419847221], [0.8763630535911789, -0.013842466402105926, 0.4842408528088045], [-0.45328688836223213, 0.028263638339037816, 0.8733387477481256]], u'rx_location': [8.991988333114621, 86.55352645581408, 127.69217094040292], u'location_error': 1.404359065164499, u'time': 1410141790371, u'_id': u'540d0e5e7f82e72e099f21cd', u'port': 50471, u'address': u'281471087271422'},
+{u'_receiver': u'http_post', u'_processor_count': 0, u'profile_id': u'WEgwAGyc9N', u'image_name': u'2014-09-07--21-56-01-00', u'rx_rotation': [[0.1, 0.1, 0.1], [0.8763630535911789, -0.013842466402105926, 0.4842408528088045], [-0.45328688836223213, 0.028263638339037816, 0.8733387477481256]], u'rx_location': [8.991988333114621, 86.55352645581408, 127.69217094040292], u'location_error': 1.404359065164499, u'time': 1410141790371, u'_id': u'540d0e5e7f82e72e099f21cd', u'port': 50471, u'address': u'281471087271422'},
 {u'_receiver': u'http_post', u'_processor_count': 0, u'profile_id': u'WEgwAGyc9N', u'image_name': u'2014-09-07--21-56-18-04', u'rx_rotation': [[0.014336268087278349, 1.021694671550933, 0.0804287416674231], [-0.7853248943169617, 0.044185912924521856, -0.5778365927334801], [-0.5701501006094175, -0.06855363180211634, 0.8122633033373631]], u'rx_location': [12.89953801157171, -98.55280661446464, 127.78643457463806], u'location_error': 0.9737737053724231, u'time': 1410141807039, u'_id': u'540d0e6f7f82e72e099f23c6', u'port': 50473, u'address': u'281471087271422'},
 {u'_receiver': u'http_post', u'_processor_count': 0, u'profile_id': u'WEgwAGyc9N', u'image_name': u'2014-09-07--21-56-29-89', u'rx_rotation': [[0.015124224478698925, 1.041804056892129, 0.006449379057001474], [-0.8786616158243046, -0.007072272594620899, -0.4086309837991008], [-0.40407324454139215, -0.007512734327370515, 0.911950461124837]], u'rx_location': [1.6217546827379057, -56.339913816668975, 120.36564561792889], u'location_error': 0.9698791649886402, u'time': 1410141818816, u'_id': u'540d0e7a7f82e72e099f2542', u'port': 50474, u'address': u'281471087271422'},
 {u'_receiver': u'http_post', u'_processor_count': 0, u'profile_id': u'WEgwAGyc9N', u'image_name': u'2014-09-07--21-56-32-87', u'rx_rotation': [[0.09064608032749966, 1.0330638206272116, 0.03948119636111732], [-0.8677072696932225, 0.07134261360696381, -0.4322182509235545], [-0.42873353254479224, -0.004063027995043785, 0.8993301066184629]], u'rx_location': [-0.11009001612719967, -56.178300065021624, 118.25969213607304], u'location_error': 1.063451575484379, u'time': 1410141821904, u'_id': u'540d0e7d7f82e72e099f259a', u'port': 50475, u'address': u'281471087271422'},
